@@ -16,18 +16,18 @@ This project simulates real-world IT support workflows and is ideal for portfoli
 
 ---
 
+
 ## 📂 Project Structure
 
-ai-helpdesk/
-├── app.py # Flask backend
-├── tickets.txt # Ticket storage
-├── requirements.txt # Dependencies
-├── README.md # Project description
-├── templates/
-│ └── index.html # Webpage
-└── static/
-└── style.css # CSS for UI
-
+- **ai-helpdesk/**
+  - `app.py` – Flask backend
+  - `tickets.txt` – Ticket storage
+  - `requirements.txt` – Dependencies
+  - `README.md` – Project description
+  - **templates/**
+    - `index.html` – Webpage
+  - **static/**
+    - `style.css` – CSS for UI
 ---
 
 ## 💻 Installation
