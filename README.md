@@ -66,11 +66,12 @@ Python 3.x
 Flask – Web framework
 HTML/CSS – Frontend
 Jinja2 – Template rendering
+
 🌟 Future Improvements
 Add real AI integration (OpenAI API) for dynamic responses.
 Add user authentication for multiple technicians.
 Add ticket filtering by priority or status.
 Deploy as an online web portal using Heroku, Render, or GitHub Pages (frontend only).
-📌 Author
 
+📌 Author
 Komalpreet Sandhu – Portfolio Project
