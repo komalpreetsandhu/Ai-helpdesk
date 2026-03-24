@@ -1,9 +1,11 @@
+from flask import Flask, request, render_template, redirect, url_for
 from datetime import datetime
 
-# 🤖 Simulated AI function
+app = Flask(__name__)
+
+# --- Simulated AI ---
 def ask_ai(issue):
     issue = issue.lower()
-
     if "vpn" in issue:
         return "Try reconnecting your VPN and check your internet connection."
     elif "password" in issue:
@@ -17,66 +19,65 @@ def ask_ai(issue):
     else:
         return "I'm not sure about this issue."
 
-# 🎫 Function to create ticket
+# --- Read tickets safely ---
+def get_tickets():
+    tickets_list = []
+    try:
+        with open("tickets.txt", "r") as file:
+            for line in file:
+                line = line.strip()
+                if line == "":
+                    continue
+                parts = line.split('|')
+                if len(parts) != 4:
+                    continue
+                ticket_dict = {
+                    "id": parts[0].split(": ")[1].strip(),
+                    "issue": parts[1].split(": ")[1].strip(),
+                    "priority": parts[2].split(": ")[1].strip(),
+                    "status": parts[3].split(": ")[1].strip()
+                }
+                tickets_list.append(ticket_dict)
+        return tickets_list
+    except FileNotFoundError:
+        return []
+
+# --- Create ticket ---
 def create_ticket(issue):
-    # Set priority
     if "server" in issue.lower() or "network" in issue.lower():
         priority = "HIGH"
     else:
         priority = "NORMAL"
-
-    # Create unique ticket ID
     ticket_id = datetime.now().strftime("%Y%m%d%H%M%S")
-
-    # Save to file
     with open("tickets.txt", "a") as file:
         file.write(f"ID: {ticket_id} | Issue: {issue} | Priority: {priority} | Status: OPEN\n")
 
-    print(f"\n✅ Ticket created successfully! ID: {ticket_id}")
+# --- Close ticket ---
+def close_ticket(ticket_id):
+    tickets = get_tickets()
+    with open("tickets.txt", "w") as file:
+        for t in tickets:
+            if t["id"] == ticket_id:
+                t["status"] = "CLOSED"
+            file.write(f'ID: {t["id"]} | Issue: {t["issue"]} | Priority: {t["priority"]} | Status: {t["status"]}\n')
 
-# 📄 Function to view tickets
-def view_tickets():
-    try:
-        with open("tickets.txt", "r") as file:
-            print("\n📋 --- All Tickets ---")
-            print(file.read())
-    except FileNotFoundError:
-        print("\n⚠️ No tickets found yet.")
-
-# 🚀 Main program
-while True:
-    print("\n=== IT Support System ===")
-    print("1. Ask for Help (AI)")
-    print("2. View Tickets")
-    print("3. Exit")
-
-    choice = input("Choose option: ")
-
-    if choice == "1":
-        issue = input("\nEnter your problem: ")
-
-        print("\n🤖 Checking solution...\n")
-        response = ask_ai(issue)
-
-        print("💡 Suggestion:", response)
-
-        if "not sure" in response.lower():
-            user_choice = input("\nDo you want to create a ticket? (yes/no): ")
-
-            if user_choice.lower() == "yes":
+# --- Flask route ---
+@app.route("/", methods=["GET", "POST"])
+def home():
+    response = None
+    if request.method == "POST":
+        if "issue" in request.form:  # AI form submitted
+            issue = request.form["issue"]
+            ai_response = ask_ai(issue)
+            if "not sure" in ai_response.lower():
                 create_ticket(issue)
-        else:
-            user_choice = input("\nDid this solve your issue? (yes/no): ")
+            response = ai_response
+        elif "close_id" in request.form:  # Close ticket form submitted
+            close_ticket(request.form["close_id"])
+            return redirect(url_for('home'))
 
-            if user_choice.lower() == "no":
-                create_ticket(issue)
+    tickets = get_tickets()
+    return render_template("index.html", response=response, tickets=tickets)
 
-    elif choice == "2":
-        view_tickets()
-
-    elif choice == "3":
-        print("Exiting system. Goodbye!")
-        break
-
-    else:
-        print("Invalid option. Try again.")
+if __name__ == "__main__":
+    app.run(debug=True)
